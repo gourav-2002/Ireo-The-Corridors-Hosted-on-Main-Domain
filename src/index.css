@@ -1,0 +1,40 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Playfair Display", ui-serif, Georgia, serif;
+  --font-accent: "Cormorant Garamond", serif;
+
+  --color-gold: #E2B93B;
+  --color-gold-dark: #b98851;
+  --color-navy: #1C2D37;
+  --color-near-black: #0D0D0C;
+  --color-muted: #8A8A8A;
+  --color-light-grey: #F5F4F0;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply font-sans text-navy bg-white;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif;
+  }
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+}
+
+.gold-gradient {
+  background: linear-gradient(135deg, #E2B93B 0%, #b98851 100%);
+}
+
+.navy-gradient-overlay {
+  background: linear-gradient(to right, rgba(28, 45, 55, 0.8) 0%, rgba(28, 45, 55, 0) 100%);
+}
