@@ -126,9 +126,12 @@ const Navbar = () => {
           </a>
 
           {/* Schedule Button */}
-          <button className="gold-gradient text-white px-6 py-2.5 rounded-sm font-medium hover:opacity-90 transition-opacity shadow-lg shadow-gold/20">
-            Schedule a Visit
-          </button>
+          <a
+  href="#contact"
+  className="gold-gradient text-white px-6 py-2.5 rounded-sm font-medium hover:opacity-90 transition-opacity shadow-lg shadow-gold/20 inline-block"
+>
+  Schedule a Visit
+</a>
         </div>
 
         {/* ✅ Mobile Toggle */}
@@ -181,9 +184,12 @@ const Navbar = () => {
                 +91 98998 88015
               </a>
 
-              <button className="gold-gradient text-white px-8 py-4 rounded-sm font-medium w-full mt-2">
-                Schedule a Visit
-              </button>
+              <a
+  href="#contact"
+  className="gold-gradient text-white px-8 py-4 rounded-sm font-medium hover:opacity-90 hover:text-navy transition-all inline-block"
+>
+  Schedule Consultation
+</a>
 
             </div>
           </motion.div>
@@ -195,13 +201,54 @@ const Navbar = () => {
 
 const Hero = () => {
   const [openModal, setOpenModal] = useState(false);
+  const [heroForm, setHeroForm] = useState({ name: '', phone: '', email: '' });
+  const [heroStatus, setHeroStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
+  const [heroError, setHeroError] = useState('');
+
+  const handleHeroChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setHeroForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleHeroSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setHeroError('');
+
+    if (!heroForm.name.trim() || !heroForm.phone.trim() || !heroForm.email.trim()) {
+      setHeroError('Please fill in all fields.');
+      return;
+    }
+
+    setHeroStatus('submitting');
+
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: heroForm.name, phone: heroForm.phone, email: heroForm.email }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        setHeroStatus('success');
+        setHeroForm({ name: '', phone: '', email: '' });
+      } else {
+        setHeroStatus('error');
+        setHeroError(data.error || 'Something went wrong. Please try again.');
+      }
+    } catch {
+      setHeroStatus('error');
+      setHeroError('Network error. Please try again.');
+    }
+  };
+
   return (
     <section id="home" className="relative h-screen flex items-center overflow-hidden pt-20">
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
-        <img 
-          src="/hero-banner-2.jpg" 
-          alt="Luxury Property" 
+        <img
+          src="/hero-banner-2.jpg"
+          alt="Luxury Property"
           className="w-full h-full object-cover"
           referrerPolicy="no-referrer"
         />
@@ -210,7 +257,7 @@ const Hero = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10 grid md:grid-cols-2 gap-12 items-center">
         {/* Left Content */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, x: -50 }}
           whileInView={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8 }}
@@ -220,16 +267,19 @@ const Hero = () => {
           <h1 className="text-4xl md:text-6xl text-white leading-tight mb-6">
           Ireo The Corridors<br />
             <span className="italic font-accent text-4xl md:text-5xl leading-none">Ready-to-Move Residences on Golf Course Extension Road</span>
-          
+
           </h1>
           <p className="text-light-grey/80 text-xl mb-10 max-w-lg leading-relaxed">
             37.5 acres of planned living with a 2-acre operational clubhouse, low-density layout, and one of the most established residential addresses in Sector 67A.
           </p>
           <div className="flex flex-wrap gap-4">
-            
-            <button className="gold-gradient text-white px-8 py-4 rounded-sm font-medium hover:opacity-90 hover:text-navy transition-all">
-              Schedule Consultation
-            </button>
+
+            <a
+  href="#contact"
+  className="gold-gradient text-white px-8 py-4 rounded-sm font-medium hover:opacity-90 hover:text-navy transition-all inline-block"
+>
+  Schedule Consultation
+</a>
 
             <button
           onClick={() => setOpenModal(true)}
@@ -243,16 +293,16 @@ const Hero = () => {
         onClose={() => setOpenModal(false)}
       />
 
-            
 
-       
-            
-             
+
+
+
+
           </div>
         </motion.div>
 
         {/* Right Content - Form */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2 }}
@@ -260,33 +310,75 @@ const Hero = () => {
           className="hidden md:block"
         >
           <div className="glass-card p-8 rounded-2xl shadow-2xl border border-white/20 max-w-md ml-auto">
-            <h3 className="text-3xl text-navy mb-2">Get in Touch</h3>
-            <p className="text-muted mb-8">Share your requirements. Expect a prompt response.</p>
-            
-            <form className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-navy uppercase tracking-wider mb-1">Your Name</label>
-                <input type="text" className="w-full bg-light-grey border-none p-3 rounded-md focus:ring-2 focus:ring-gold outline-none" placeholder="John Doe" required />
+
+            {heroStatus === 'success' ? (
+              <div className="text-center py-8">
+                <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <CheckCircle2 size={28} className="text-green-600" />
+                </div>
+                <h3 className="text-2xl text-navy mb-2">Enquiry Submitted!</h3>
+                <p className="text-muted text-sm leading-relaxed">
+                  Thank you! Our advisor will reach out to you shortly.
+                </p>
               </div>
-              <div>
-                <label className="block text-xs font-bold text-navy uppercase tracking-wider mb-1">Phone Number</label>
-                <input type="tel" className="w-full bg-light-grey border-none p-3 rounded-md focus:ring-2 focus:ring-gold outline-none" placeholder="+91 98765 43210" required />
-              </div>
-               <div>
-  <label className="block text-xs font-bold text-navy uppercase tracking-wider mb-1">
-    Email Address
-  </label>
-  <input
-    type="email"
-    className="w-full bg-light-grey border-none p-3 rounded-md focus:ring-2 focus:ring-gold outline-none"
-    placeholder="example@email.com"
-    required
-  />
-</div>
-              <button className="w-full gold-gradient text-white py-4 rounded-md font-bold text-lg mt-4 hover:opacity-90 transition-opacity">
-                Get Started
-              </button>
-            </form>
+            ) : (
+              <>
+                <h3 className="text-3xl text-navy mb-2">Get in Touch</h3>
+                <p className="text-muted mb-8">Share your requirements. Expect a prompt response.</p>
+
+                <form className="space-y-4" onSubmit={handleHeroSubmit} noValidate>
+                  <div>
+                    <label className="block text-xs font-bold text-navy uppercase tracking-wider mb-1">Your Name</label>
+                    <input
+                      type="text"
+                      name="name"
+                      value={heroForm.name}
+                      onChange={handleHeroChange}
+                      className="w-full bg-light-grey border-none p-3 rounded-md focus:ring-2 focus:ring-gold outline-none"
+                      placeholder="John Doe"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-navy uppercase tracking-wider mb-1">Phone Number</label>
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={heroForm.phone}
+                      onChange={handleHeroChange}
+                      className="w-full bg-light-grey border-none p-3 rounded-md focus:ring-2 focus:ring-gold outline-none"
+                      placeholder="+91 98765 43210"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-navy uppercase tracking-wider mb-1">Email Address</label>
+                    <input
+                      type="email"
+                      name="email"
+                      value={heroForm.email}
+                      onChange={handleHeroChange}
+                      className="w-full bg-light-grey border-none p-3 rounded-md focus:ring-2 focus:ring-gold outline-none"
+                      placeholder="example@email.com"
+                      required
+                    />
+                  </div>
+
+                  {heroError && (
+                    <p className="text-red-500 text-sm text-center">{heroError}</p>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={heroStatus === 'submitting'}
+                    className="w-full gold-gradient text-white py-4 rounded-md font-bold text-lg mt-4 hover:opacity-90 transition-opacity disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {heroStatus === 'submitting' ? 'Sending…' : 'Get Started'}
+                  </button>
+                </form>
+              </>
+            )}
+
           </div>
         </motion.div>
       </div>
@@ -648,18 +740,25 @@ const TransparentPricing = () => {
           </div>
 
           <div className="flex items-center justify-center">
-            <div className="p-10 bg-[#0f1c2e] text-white rounded-2xl shadow-lg text-center">
-              <h4 className="text-2xl mb-4 text-yellow-500">
-                Best-Negotiated Pricing
-              </h4>
-              <p className="mb-6">
-                Contact Do Bigha Zamin for exclusive pricing assistance.
-              </p>
-              <button className="px-8 py-3 bg-yellow-500 text-black font-semibold rounded-full hover:bg-yellow-400 transition-all">
-                Enquire Now →
-              </button>
-            </div>
-          </div>
+  <div className="p-10 bg-[#0f1c2e] text-white rounded-2xl shadow-lg text-center">
+    
+    <h4 className="text-2xl mb-4 text-yellow-500">
+      Best-Negotiated Pricing
+    </h4>
+
+    <p className="mb-6">
+      Contact Do Bigha Zamin for exclusive pricing assistance.
+    </p>
+
+    <a
+      href="#contact"
+      className="inline-block px-8 py-3 bg-yellow-500 text-black font-semibold rounded-full hover:bg-yellow-400 transition-all"
+    >
+      Enquire Now →
+    </a>
+
+  </div>
+</div>
 
         </div>
 
@@ -1392,6 +1491,47 @@ const HowWeWork = () => {
 };
 
 const ContactCTA = () => {
+  const [formData, setFormData] = useState({ name: '', email: '', phone: '', budget: '', message: '' });
+  const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
+  const [errorMsg, setErrorMsg] = useState('');
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setErrorMsg('');
+
+    if (!formData.name.trim() || !formData.email.trim() || !formData.phone.trim()) {
+      setErrorMsg('Please fill in your Name, Email, and Phone Number.');
+      return;
+    }
+
+    setStatus('submitting');
+
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        setStatus('success');
+        setFormData({ name: '', email: '', phone: '', budget: '', message: '' });
+      } else {
+        setStatus('error');
+        setErrorMsg(data.error || 'Something went wrong. Please try again.');
+      }
+    } catch {
+      setStatus('error');
+      setErrorMsg('Network error. Please check your connection and try again.');
+    }
+  };
+
   return (
     <section id="contact" className="py-28 bg-navy relative overflow-hidden text-white">
 
@@ -1432,46 +1572,87 @@ const ContactCTA = () => {
           {/* RIGHT FORM */}
           <div className="bg-white text-[#0f1c2e] rounded-3xl p-10 shadow-2xl">
 
-            <form className="space-y-6">
+            {status === 'success' ? (
+              <div className="text-center py-8">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <CheckCircle2 size={32} className="text-green-600" />
+                </div>
+                <h3 className="text-2xl font-serif font-semibold text-[#0f1c2e] mb-3">Enquiry Submitted!</h3>
+                <p className="text-[#0f1c2e]/60 text-sm leading-relaxed mb-6">
+                  Thank you! We've received your enquiry and sent a confirmation to your email. Our advisor will reach out within 24 hours.
+                </p>
+                <button
+                  onClick={() => setStatus('idle')}
+                  className="text-sm text-yellow-600 underline underline-offset-2 hover:text-yellow-700 transition"
+                >
+                  Submit another enquiry
+                </button>
+              </div>
+            ) : (
+              <form className="space-y-6" onSubmit={handleSubmit} noValidate>
 
-              <input
-                type="text"
-                placeholder="Full Name"
-                className="w-full border border-[#0f1c2e]/20 rounded-full px-6 py-4 focus:outline-none focus:border-yellow-500"
-              />
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  placeholder="Full Name *"
+                  className="w-full border border-[#0f1c2e]/20 rounded-full px-6 py-4 focus:outline-none focus:border-yellow-500"
+                  required
+                />
 
-              <input
-                type="email"
-                placeholder="Email Address"
-                className="w-full border border-[#0f1c2e]/20 rounded-full px-6 py-4 focus:outline-none focus:border-yellow-500"
-              />
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="Email Address *"
+                  className="w-full border border-[#0f1c2e]/20 rounded-full px-6 py-4 focus:outline-none focus:border-yellow-500"
+                  required
+                />
 
-              <input
-                type="tel"
-                placeholder="Phone Number"
-                className="w-full border border-[#0f1c2e]/20 rounded-full px-6 py-4 focus:outline-none focus:border-yellow-500"
-              />
+                <input
+                  type="tel"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  placeholder="Phone Number *"
+                  className="w-full border border-[#0f1c2e]/20 rounded-full px-6 py-4 focus:outline-none focus:border-yellow-500"
+                  required
+                />
 
-              <input
-                type="text"
-                placeholder="Your Budget (e.g. ₹50L – ₹1 Cr)"
-                className="w-full border border-[#0f1c2e]/20 rounded-full px-6 py-4 focus:outline-none focus:border-yellow-500"
-              />
+                <input
+                  type="text"
+                  name="budget"
+                  value={formData.budget}
+                  onChange={handleChange}
+                  placeholder="Your Budget (e.g. ₹50L – ₹1 Cr)"
+                  className="w-full border border-[#0f1c2e]/20 rounded-full px-6 py-4 focus:outline-none focus:border-yellow-500"
+                />
 
-              <textarea
-                rows="4"
-                placeholder="Your Message (Optional)"
-                className="w-full border border-[#0f1c2e]/20 rounded-3xl px-6 py-4 focus:outline-none focus:border-yellow-500 resize-none"
-              ></textarea>
+                <textarea
+                  rows={4}
+                  name="message"
+                  value={formData.message}
+                  onChange={handleChange}
+                  placeholder="Your Message (Optional)"
+                  className="w-full border border-[#0f1c2e]/20 rounded-3xl px-6 py-4 focus:outline-none focus:border-yellow-500 resize-none"
+                ></textarea>
 
-              <button
-                type="submit"
-                className="w-full gold-gradient text-black font-semibold py-4 rounded-full hover:bg-yellow-400 transition duration-300"
-              >
-                Send Enquiry
-              </button>
+                {errorMsg && (
+                  <p className="text-red-500 text-sm text-center">{errorMsg}</p>
+                )}
 
-            </form>
+                <button
+                  type="submit"
+                  disabled={status === 'submitting'}
+                  className="w-full gold-gradient text-black font-semibold py-4 rounded-full hover:bg-yellow-400 transition duration-300 disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {status === 'submitting' ? 'Sending…' : 'Send Enquiry'}
+                </button>
+
+              </form>
+            )}
 
           </div>
 
@@ -1617,6 +1798,53 @@ const Footer = () => {
 
 
 const BrochureModal = ({ isOpen, onClose }) => {
+  const [formData, setFormData] = useState({ name: '', phone: '', email: '' });
+  const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
+  const [errorMsg, setErrorMsg] = useState('');
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setErrorMsg('');
+
+    if (!formData.name.trim() || !formData.phone.trim() || !formData.email.trim()) {
+      setErrorMsg('Please fill in all fields.');
+      return;
+    }
+
+    setStatus('submitting');
+
+    try {
+      const res = await fetch('/api/brochure', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        setStatus('success');
+      } else {
+        setStatus('error');
+        setErrorMsg(data.error || 'Something went wrong. Please try again.');
+      }
+    } catch {
+      setStatus('error');
+      setErrorMsg('Network error. Please check your connection and try again.');
+    }
+  };
+
+  const handleClose = () => {
+    setFormData({ name: '', phone: '', email: '' });
+    setStatus('idle');
+    setErrorMsg('');
+    onClose();
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -1625,7 +1853,7 @@ const BrochureModal = ({ isOpen, onClose }) => {
       {/* Background Overlay */}
       <div
         className="absolute inset-0 bg-black/30 backdrop-blur-sm"
-        onClick={onClose}
+        onClick={handleClose}
       />
 
       {/* Modal Box */}
@@ -1633,70 +1861,104 @@ const BrochureModal = ({ isOpen, onClose }) => {
 
         {/* Close Button */}
         <button
-          onClick={onClose}
+          onClick={handleClose}
           className="absolute top-5 right-5 text-[#0f1c2e]/60 hover:text-black"
         >
           <X size={24} />
         </button>
 
-        <h2 className="text-3xl font-serif text-[#0f1c2e] mb-4">
-          Download Brochure
-        </h2>
-
-        <p className="text-[#0f1c2e]/60 mb-8">
-          Please share your details to receive the complete project brochure.
-        </p>
-
-        <form className="space-y-6">
-
-          {/* Name */}
-          <div>
-            <label className="block text-xs font-bold text-[#0f1c2e] uppercase mb-2">
-              Your Name
-            </label>
-            <input
-              type="text"
-              required
-              placeholder="John Doe"
-              className="w-full bg-gray-100 p-4 rounded-lg outline-none focus:ring-2 focus:ring-yellow-500"
-            />
+        {status === 'success' ? (
+          <div className="text-center py-8">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <CheckCircle2 size={32} className="text-green-600" />
+            </div>
+            <h2 className="text-2xl font-serif text-[#0f1c2e] mb-3">Brochure Sent!</h2>
+            <p className="text-[#0f1c2e]/60 text-sm leading-relaxed mb-6">
+              We've sent the brochure download link to your email. Please check your inbox.
+            </p>
+            <button
+              onClick={handleClose}
+              className="text-sm text-yellow-600 underline underline-offset-2 hover:text-yellow-700 transition"
+            >
+              Close
+            </button>
           </div>
+        ) : (
+          <>
+            <h2 className="text-3xl font-serif text-[#0f1c2e] mb-4">
+              Download Brochure
+            </h2>
 
-          {/* Phone */}
-          <div>
-            <label className="block text-xs font-bold text-[#0f1c2e] uppercase mb-2">
-              Phone Number
-            </label>
-            <input
-              type="tel"
-              required
-              placeholder="+91 98765 43210"
-              className="w-full bg-gray-100 p-4 rounded-lg outline-none focus:ring-2 focus:ring-yellow-500"
-            />
-          </div>
+            <p className="text-[#0f1c2e]/60 mb-8">
+              Please share your details to receive the complete project brochure.
+            </p>
 
-          {/* Email */}
-          <div>
-            <label className="block text-xs font-bold text-[#0f1c2e] uppercase mb-2">
-              Email Address
-            </label>
-            <input
-              type="email"
-              required
-              placeholder="example@email.com"
-              className="w-full bg-gray-100 p-4 rounded-lg outline-none focus:ring-2 focus:ring-yellow-500"
-            />
-          </div>
+            <form className="space-y-6" onSubmit={handleSubmit} noValidate>
 
-          {/* Submit */}
-          <button
-            type="submit"
-            className="w-full gold-gradient text-black font-semibold py-4 rounded-xl hover:opacity-90 transition"
-          >
-            Get Brochure
-          </button>
+              {/* Name */}
+              <div>
+                <label className="block text-xs font-bold text-[#0f1c2e] uppercase mb-2">
+                  Your Name
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  required
+                  placeholder="John Doe"
+                  className="w-full bg-gray-100 p-4 rounded-lg outline-none focus:ring-2 focus:ring-yellow-500"
+                />
+              </div>
 
-        </form>
+              {/* Phone */}
+              <div>
+                <label className="block text-xs font-bold text-[#0f1c2e] uppercase mb-2">
+                  Phone Number
+                </label>
+                <input
+                  type="tel"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  required
+                  placeholder="+91 98765 43210"
+                  className="w-full bg-gray-100 p-4 rounded-lg outline-none focus:ring-2 focus:ring-yellow-500"
+                />
+              </div>
+
+              {/* Email */}
+              <div>
+                <label className="block text-xs font-bold text-[#0f1c2e] uppercase mb-2">
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                  placeholder="example@email.com"
+                  className="w-full bg-gray-100 p-4 rounded-lg outline-none focus:ring-2 focus:ring-yellow-500"
+                />
+              </div>
+
+              {errorMsg && (
+                <p className="text-red-500 text-sm text-center">{errorMsg}</p>
+              )}
+
+              {/* Submit */}
+              <button
+                type="submit"
+                disabled={status === 'submitting'}
+                className="w-full gold-gradient text-black font-semibold py-4 rounded-xl hover:opacity-90 transition disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {status === 'submitting' ? 'Sending…' : 'Get Brochure'}
+              </button>
+
+            </form>
+          </>
+        )}
       </div>
     </div>
   );
